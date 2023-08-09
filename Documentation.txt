@@ -1,0 +1,268 @@
+Robot 64 PlayDB
+Database branch documentation.
+
+This document will give you all the information you need to create a mod which can communicate with the PlayDB server.
+Please do acknowledge that this does not give you access to the official PlayDB database
+but rather a custom branch that was made for you to make your own modification of PlayDB.
+
+Please note that this branch is programmed in a way that was meant for public use in the past.
+As such the link you have received to all APIs should not be shared or anyone can modify your database.
+
+
+PART 1 - Code Tutorial:
+
+
+Before you do anything, we need to go over some information to make sure
+you know how to properly send and receive data from the web server.
+This is all powered by Roblox's "HttpService" which can
+only be used on the serverside so please keep that in mind.
+
+All of the APIs on this website use the POST request type, so to
+send a request to an API, you would call the PostAsync function of HttpService.
+
+The first parameter you pass to the function is the URL to access.
+All the APIs for this branch are within "https://api-playdb.emk530.net/public/"
+So for future reference, if a name like "create.php" is mentioned,
+you would add that to the aforementioned URL to know what to access.
+For example: "https://api-playdb.emk530.net/public/create.php"
+
+The second parameter is the actual data to transmit, and this works in the form of parameters.
+If a certain API expects parameter "name" and "data", you would send over something like:
+{
+	["name"] = name,
+	["data"] = data
+}
+Because of strange behavior with transmitting this data, please implement
+this function in your code and make sure to only transmit the function call with the data inside the function.
+local function convertTable(list)
+	local data = ""
+	for k, v in pairs(list) do
+		data = data .. ("&%s=%s"):format(
+			hs:UrlEncode(k),
+			hs:UrlEncode(v)
+		)
+	end
+	data = data:sub(2)
+	return data
+end
+
+The third parameter is the content type, to make sure this works properly,
+make sure it is set to Enum.HttpContentType.ApplicationUrlEncoded
+
+The fourth parameter is whether to compress the data or not,
+for safety reasons this should be set to false.
+
+If a response code other than 200 is given to Roblox, the script will error.
+because of this, make sure to wrap your requests in a pcall to protect your code.
+Make sure to check the response afterwards to see if the request succeeded or not.
+
+Doing everything right would look something like this:
+local _, result = pcall(function()
+	hs:PostAsync("https://api-playdb.emk530.net/public/create.php",convertTable({
+		["name"] = name,
+		["data"] = data
+	}),Enum.HttpContentType.ApplicationUrlEncoded,false)
+end)
+if not result then
+	--The request did not succeed
+end
+(this is an invalid request to create.php and should not be attempted)
+[hs is set to game:GetService("HttpService")]
+
+Please beware that the max data size you can send through PostAsync is 1024 KB.
+
+Next up is decoding whatever the API sends to you.
+The API communicates back in a format called JSON, so to convert that into
+an array you again use HttpService by calling the "JSONDecode" function.
+This function can error so again, use a pcall to check if it errored or not.
+If it errored, then that must mean something from the server was not possible to
+load as JSON, which is typically a fault with the PlayDB server. Reports of this is appreciated.
+
+Here's a pcall example:
+local success, result = pcall(function()
+	return hs:JSONDecode(result)
+end)
+if not success then
+	--result is not JSON data
+end
+
+Now to handling the decoded JSON data.
+Data from the PlayDB API might look something like this:
+{"success":false,"error":2}
+
+If I want to access "error" then with the decoded JSON data you type result["error"], fairly straightforward.
+What actually gets sent back by every API and more will be covered now.
+
+
+PART 2 - API Documentation:
+
+
+This part will cover every single API, what they do, how they respond and what they expect from you.
+
+Firstly, errors. Everything usually has errors from time to time and it's best to know them to handle them well.
+Below is a full list of all error codes the PlayDB server might give you and where you will find them.
+
+0: Could not connect to MySQL.              | Sources: ALL
+1: MySQL Query Error.                       | Sources: ALL
+2: The requested level does not exist!      | Sources: delete.php, fetch.php, update.php
+3: A required POST parameter was missing!   | Sources: list.php
+4: Suspected SQL injection, request denied. | Sources: list.php
+5: Invalid slot number! Please choose 1-3.  | Sources: slotfetch.php, slotsave.php
+6: Denied stats modification.               | Sources: statmod.php
+7: Hash conflict with level upload!         | Sources: create.php, update.php
+8: You are not the owner of this level!     | Sources: update.php
+
+The error codes 0 and 1 are errors within the PlayDB server.
+Error code 0 is a fault of PlayDB only but you might be
+able to cause error 1 through unexpected data transmission. Be careful.
+For every single API you should have error handling for errors 0 and 1.
+Knowing this should help you create error handling within your code.
+
+All APIs include the boolean parameter "success" to indicate whether the request was successful or not.
+If "success" happens to be false, an additional parameter named "error" is always provided, giving the error code.
+If "success" happens to be true, there could be miscellaneous parameters following depending on what API you are accessing.
+
+For all the following API documentations, please refer to the error list to know what
+errors all these different APIs could return so you can handle them properly.
+
+create.php:
+This API is responsible for publishing a level onto the database,
+it contains no filter besides a hash conflict check so things like dialogue filter and other
+data limiting operations need to be done on your end through your ServerScript.
+
+This API expects to receive parameters "name", "uploader", "data".
+Failing to provide this will make the API respond with error code 400.
+
+Parameter "name" (string) is the name of the level that is being published.
+Parameter "uploader" (int) is the UserID of whoever uploaded the level.
+Parameter "data" (string) is the raw level code that is being published.
+
+Regardless of "success", nothing extra besides "error" for false is provided.
+
+Properly providing all data should upload your level and make it accessible by list.php
+
+
+update.php:
+This is the updating variant of create.php, made for updating published levels.
+Expected parameters: "id" (int), "name" (string), "uploader" (int), "data" (string)
+"id" being the level ID to update.
+"name" being the level name to update to.
+"data" being the level code to update to.
+"uploader" being the UserID of the person trying to update the level.
+
+A proper request returns success true and nothing else.
+
+
+delete.php:
+This API is responsible for deleting a level by a certain ID.
+Expected parameters: "id" (int)
+No extra data besides "success" and maybe "error"
+
+
+fetch.php:
+This API downloads a level from the database, meant to be given to the player.
+Expected parameters: "id" (int), "uid" (int)
+"uid" is the requesting player's UserID, necessary for comparing ownership
+for visits incrementing and level editing.
+If the user wants to edit the level, provide the parameter "edit" set to true. Has no impact on output data.
+If "success" is true, extra data is given:
+"owner": A boolean determining whether the provided parameter "uid" is the owner of the level.
+"name": The level name.
+"data": The level code.
+
+
+list.php:
+The most extensive API, meant for level listing in the play section.
+Expected parameters: "sort" (int), "page" (int)
+"sort" is a number for picking what to sort the levels by.
+"page" is a number for picking what page to load. Page 1 is actually 0 in the API.
+Sort IDs below:
+1: Top Rated
+2: Newest
+3: My Levels (expects: "uid" (int))
+4: Popular
+6: Name Search (expects: "search" (string))
+7: Largest
+8: ID Search (expects: "search" (int))
+9: Favorited (expects: "starred" (string))
+10: Random
+12: User Search (expects: "search" (int))
+If you are sorting by 3, you have to provide parameter "uid" or error 3 will happen.
+Same for sorting by 6,8,12 but they expect "search" and 9 expects "starred"
+"User Search" sorting expects the UserID (parameter "uid") that you are looking for,
+so conversion from username to UserID is expected to be handled by you.
+"Favorited" search expects the parameter "starred" which is a string of favorited IDs separated by a comma.
+Invalid data in "starred" may trigger error 4.
+
+Successfully providing all the correct data should give you three parameters back.
+"success", "total" and "levels".
+"total" is the number of levels that were found with your query, useful for determining total pages on the client.
+"levels" is a list of levels with a list of parameters inside each level in this order:
+id,name,favorites,uploader,visits,size
+
+"size" up until this point is unheard of, this is a number of bytes that the level code takes up.
+Here's an example of how the "levels" parameter could look like:
+[[1,"Test Level",0,71510352,1,32767],[2,"Another Level",1,71510352,1,16384]]
+
+
+slotfetch.php:
+This API is part of the save slot feature which PlayDB uses.
+Expected parameters: "slot" (int), "uid" (int)
+"uid" is the UserID of the user that is loading their save slot.
+"slot" has to be a number either 1,2 or 3 or error 5 will happen.
+
+A proper request will be given the parameter "data" containing the level code inside the save slot.
+If the level seems to be empty or there is no data then "data" will be set to null. It is
+up to you to detect this null event so you can provide a placeholder level code.
+
+
+slotsave.php:
+This API is meant for saving data to a user's save slot.
+Expected parameters: "slot" (int), "uid" (int), "data" (string)
+
+A proper request will write the data from "data" into the user's save slot.
+
+
+statmod.php:
+This API was meant to modify stats of a level, but currently is only used for favoriting.
+Expected parameters: "id" (int), "favorites" (int)
+"id" being the level to modify
+"favorites" being what to modify the level favorites by, currently only allows numbers -1 and 1 or error 6 happens.
+
+A proper request returns success true and nothing else.
+
+
+token_claim.php:
+This API is one of three parts for a system of handling given tokens
+that could not be directly given to the recipient, so they are stored and remembered.
+This API should be called when a user has been given their tokens as listed in token_fetch.php
+Expected parameters: "recipient" (int)
+"recipient" being the UserID who claimed their tokens from the API.
+
+A proper request returns success true and nothing else.
+
+
+token_give.php:
+This will increment the stored tokens for a certain recipient by 1.
+Expected parameters: "recipient" (int)
+
+A proper request returns success true and nothing else.
+
+
+token_fetch.php
+This will give you a list of all UserIDs who haven't claimed their tokens.
+No expected parameters.
+Data order: UserID, Tokens
+Data example: [[71510352,10],[14359864,18]]
+
+
+
+
+
+Thank you for reading through this documentation, you should now be well equipped with
+all the info you need to set up a game that makes use of the PlayDB server.
+If you have any questions or concerns, please reach out through Discord.
+
+Written from 12:52 AM to 2:21 AM
+
+Love, EmK530.
