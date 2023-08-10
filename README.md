@@ -18,10 +18,13 @@ If you decide to host your own server, make sure you construct your tables prope
 
 Below are screenshots from phpMyAdmin showing the structure of all the tables:
 
+#### Levels table:
 ![levels table](https://github.com/EmK530/PlayDBBackend/assets/50961259/6d97f953-4055-4e52-b24b-4f7b1620b30c)
 
+#### Sav1, sav2 and sav3 tables:
 ![sav1, sav2 and sav3 tables](https://github.com/EmK530/PlayDBBackend/assets/50961259/e588cf5f-9019-4cef-b2ae-f14f4c0474d0)
 
+#### Tokens table:
 ![tokens table](https://github.com/EmK530/PlayDBBackend/assets/50961259/83dedeb8-7753-43fb-a953-e33ff560679c)
 
 #### EmK530 2023
