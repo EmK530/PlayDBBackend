@@ -110,7 +110,7 @@ Below is a full list of all error codes the PlayDB server might give you and whe
 5: Invalid slot number! Please choose 1-3.  | Sources: slotfetch.php, slotsave.php
 6: Denied stats modification.               | Sources: statmod.php
 7: Hash conflict with level upload!         | Sources: create.php, update.php
-8: You are not the owner of this level!     | Sources: update.php
+8: You are not the owner of this level!     | Sources: update.php, delete.php
 
 The error codes 0 and 1 are errors within the PlayDB server.
 Error code 0 is a fault of PlayDB only but you might be
