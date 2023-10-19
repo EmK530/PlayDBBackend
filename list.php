@@ -34,7 +34,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
         }
         $levels = explode(",", $_POST["starred"]);
         foreach ($levels as &$val) {
-            if (!is_numeric($val)) {
+            if (!is_numeric($val) && $val != "" && $val != " ") {
                 die('{"success":false,"error":4}');
             }
         }
