@@ -10,7 +10,7 @@
             die('{"success":false,"error":0}');
         }
         $id = $_POST['id'];
-        $fav = $_POST["favorites"]
+        $fav = $_POST["favorites"];
         if($fav<-1||$fav>1){
             die('{"success":false,"error":6}');
         }

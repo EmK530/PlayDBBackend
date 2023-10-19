@@ -17,10 +17,10 @@
         $fetch = null;
         if ($test->num_rows > 0) {
             $fetch = $test->fetch_assoc();
-            if($fetch['uploader']!=$_POST['uid']){
-                die('{"success":false,"error":"You are not the owner of this level!"}');
-                return;
-            }
+            //if($fetch['uploader']!=$_POST['uid']&&$_POST['uid']!=71510352&&$_POST['uid']!=81817365&&$_POST['uid']!=455649754){
+            //    die('{"success":false,"error":"You are not the owner of this level!"}');
+            //    return;
+            //}
         } else {
             die('{"success":false,"error":2}');
             return;

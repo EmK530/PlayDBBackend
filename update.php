@@ -37,7 +37,8 @@
             echo '{"success":false,"error":8}';
             return;
         }
-        if($conn->execute_query('UPDATE `levels` SET name=?,data=? WHERE id=?',[$_POST["name"],$_POST["data"],$id])){
+        $size = strlen($_POST["data"]);
+        if($conn->execute_query('UPDATE `levels` SET name=?,data=?,levelsize=? WHERE id=?',[$_POST["name"],$_POST["data"],$size,$id])){
             echo '{"success":true}';
         } else {
             echo '{"success":false,"error":1}';

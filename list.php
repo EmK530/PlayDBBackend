@@ -17,7 +17,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
     } elseif ($_POST["sort"] == 4) {
         $extra = "WHERE deleted = 0 ORDER BY visits DESC, favorites DESC, dateofupload ASC";
     } elseif ($_POST["sort"] == 7) {
-        $extra = "WHERE deleted = 0 ORDER BY CHAR_LENGTH(data) DESC, favorites DESC"; //CHAR_LENGTH(data) is not used in main branch, won't care to fix here lol
+        $extra = "WHERE deleted = 0 ORDER BY CHAR_LENGTH(data) DESC, favorites DESC";
     } elseif ($_POST["sort"] == 10) {
         $extra = "WHERE deleted = 0 ORDER BY RAND()";
     } elseif ($_POST["sort"] == 3) {
@@ -81,7 +81,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
         $totalLevels = 1;
     }
 
-    $stmt = $conn->prepare('SELECT id, name, favorites, uploader, visits, featured, data FROM levels ' . $extra . ' LIMIT ?, 16');
+    $stmt = $conn->prepare('SELECT id, name, favorites, uploader, visits, featured, levelsize FROM levels ' . $extra . ' LIMIT ?, 16');
     $pageOffset = $_POST['page'] * 16;
     if ($_POST["sort"] == 3) {
         $stmt->bind_param('ii', $_POST["uid"], $pageOffset);
@@ -111,7 +111,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
             $row['favorites'],
             $row['uploader'],
             $row['visits'],
-            strlen($row['data']) // Modified to provide the string length instead of the actual data
+            $row['levelsize']
         ];
     }
 

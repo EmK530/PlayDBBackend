@@ -25,7 +25,8 @@
                 }
             }
         }
-        if($conn->execute_query('INSERT INTO `levels` (name,uploader,data,favorites,visits,hash,deleted) VALUES (?,?,?,?,?,?,?)',[$_POST["name"],$_POST["uploader"],$_POST["data"],0,0,$hash,$deleted])){
+        $size = strlen($_POST["data"]);
+        if($conn->execute_query('INSERT INTO `levels` (name,uploader,data,favorites,visits,hash,deleted,levelsize) VALUES (?,?,?,?,?,?,?,?)',[$_POST["name"],$_POST["uploader"],$_POST["data"],0,0,$hash,0,$size])){
             echo '{"success":true}';
         } else {
             echo '{"success":false,"error":1}';
