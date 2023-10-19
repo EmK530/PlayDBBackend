@@ -17,7 +17,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
     } elseif ($_POST["sort"] == 4) {
         $extra = "WHERE deleted = 0 ORDER BY visits DESC, favorites DESC, dateofupload ASC";
     } elseif ($_POST["sort"] == 7) {
-        $extra = "WHERE deleted = 0 ORDER BY CHAR_LENGTH(data) DESC, favorites DESC";
+        $extra = "WHERE deleted = 0 ORDER BY levelsize DESC, favorites DESC";
     } elseif ($_POST["sort"] == 10) {
         $extra = "WHERE deleted = 0 ORDER BY RAND()";
     } elseif ($_POST["sort"] == 3) {
