@@ -22,7 +22,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
     } elseif ($_POST["sort"] == 10) {
         //$extra = "WHERE deleted = 0 ORDER BY RAND()";
         $start = "SELECT t1.id, name, favorites, uploader, visits, featured, levelsize FROM levels ";
-        $extra = "AS t1 JOIN (SELECT id FROM levels ORDER BY RAND() LIMIT 16) as t2 ON t1.id=t2.id";
+        $extra = "AS t1 JOIN (SELECT id FROM levels ORDER BY RAND() LIMIT 16) as t2 ON t1.id=t2.id AND deleted = 0";
     } elseif ($_POST["sort"] == 3) {
         $extra = "WHERE uploader = ? AND deleted = 0 ORDER BY dateofupload DESC, id DESC";
     } elseif ($_POST["sort"] == 5) {
