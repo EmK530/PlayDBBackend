@@ -10,6 +10,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
         die('{"success":false,"error":0}');
     }
 
+    $start = "SELECT id, name, favorites, uploader, visits, featured, levelsize FROM levels ";
     $extra = "WHERE deleted = 0 ORDER BY favorites DESC, visits DESC, dateofupload ASC";
 
     if ($_POST["sort"] == 2) {
@@ -19,7 +20,9 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
     } elseif ($_POST["sort"] == 7) {
         $extra = "WHERE deleted = 0 ORDER BY levelsize DESC, favorites DESC";
     } elseif ($_POST["sort"] == 10) {
-        $extra = "WHERE deleted = 0 ORDER BY RAND()";
+        //$extra = "WHERE deleted = 0 ORDER BY RAND()";
+        $start = "SELECT t1.id, name, favorites, uploader, visits, featured, levelsize FROM levels ";
+        $extra = "AS t1 JOIN (SELECT id FROM levels ORDER BY RAND() LIMIT 16) as t2 ON t1.id=t2.id";
     } elseif ($_POST["sort"] == 3) {
         $extra = "WHERE uploader = ? AND deleted = 0 ORDER BY dateofupload DESC, id DESC";
     } elseif ($_POST["sort"] == 5) {
@@ -81,7 +84,7 @@ if (isset($_POST["sort"])&&isset($_POST["page"])) {
         $totalLevels = 1;
     }
 
-    $stmt = $conn->prepare('SELECT id, name, favorites, uploader, visits, featured, levelsize FROM levels ' . $extra . ' LIMIT ?, 16');
+    $stmt = $conn->prepare($start . $extra . ' LIMIT ?, 16');
     $pageOffset = $_POST['page'] * 16;
     if ($_POST["sort"] == 3) {
         $stmt->bind_param('ii', $_POST["uid"], $pageOffset);
